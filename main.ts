@@ -8,7 +8,7 @@
 // /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // The rant: the self-checkout screaming "UNEXPECTED ITEM IN THE BAGGING
@@ -38,3 +38,9 @@ if (RANT.trim() !== RANT || RANT.includes('\n')) {
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'entry.txt'), RANT, 'utf8');
+
+// Read it back: refuse a partial or altered write rather than pass a
+// truncated rant to the gate.
+if (readFileSync(join(outDir, 'entry.txt'), 'utf8') !== RANT) {
+  throw new Error('entry.txt read-back does not match RANT');
+}
